@@ -3,7 +3,7 @@ import { client } from '../client';
 import type { QueryFunctionOptions } from '@apollo/client';
 import type { Pokemon_V2_Pokemon } from '../../../__generated__/types';
 
-export const LIMIT = 30;
+export const LIMIT = 5
 
 export const GET_POKEMON_LIST = gql`
   query GetAllPokemons($limit: Int!, $offset: Int!) {
@@ -26,7 +26,7 @@ export const fetchPokemons = async (ctx: QueryFunctionOptions) => {
   
   	const result = await client.query({
 			query: GET_POKEMON_LIST,
-			variables: { limit: LIMIT , offset: variables?.offset || 0 },
+			variables: { limit: LIMIT , offset: variables?.offset },
 			fetchPolicy: 'network-only'
 		});
 
@@ -39,10 +39,14 @@ export const fetchPokemons = async (ctx: QueryFunctionOptions) => {
 }
 
 export const fetchInfinitePokemons = async ({offset}: {offset: number}) => {
-  const result = await fetchPokemons({variables: { offset }});
+  const result = await client.query({
+    query: GET_POKEMON_LIST,
+    variables: { limit: LIMIT , offset: offset },
+    fetchPolicy: "network-only"
+  });
 
   return {
-    data: result.data,
+    data: result.data.pokemon_v2_pokemon as Pokemon_V2_Pokemon[],
     loading: result.loading,
     error: result.error,
   }
